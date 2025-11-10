@@ -8,9 +8,9 @@ Automated pipeline that captures, processes, and daily publishes a dynamic, sunr
 
 
 ## Hows does it work?
+- timelapse.conf to hold our configurations
 - CRON jobs start the scripts
-- - timelapse.conf to hold our configurations
-- - scheduler.py to check when to take pictures
+  - scheduler.py to check when to take pictures
   - timelapse.cpp to read the schedule, read the image capure settings, take image and make the video.
   - manager.py to upload the video, move files to NAS and free up space on the device.
 
@@ -35,9 +35,7 @@ Automated pipeline that captures, processes, and daily publishes a dynamic, sunr
 
 [sshpass](https://sshpass.com/)
 
-[raspistill]()
-
-[rpicam-still]()
+[rpicam-still](https://www.raspberrypi.com/documentation/computers/camera_software.html#rpicam-apps)
 
 
 ## Logs
