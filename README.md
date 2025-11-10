@@ -33,6 +33,10 @@ Automated pipeline that captures, processes, and daily publishes a dynamic, sunr
 
 [sshpass](https://sshpass.com/)
 
+[raspistill]()
+
+[rpicam-still]()
+
 
 ## Logs
   CPU temp during video compilation
