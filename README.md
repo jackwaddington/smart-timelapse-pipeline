@@ -25,7 +25,7 @@ Automated pipeline that captures, processes, and daily publishes a dynamic, sunr
 - We can use .conf file to say which instruction to use for the R-Pi camera on newer Pis.
 
 
-##Improvements
+## Improvements
 - The settings of the 'take image' take command can be edited.
 - conf file?
 
