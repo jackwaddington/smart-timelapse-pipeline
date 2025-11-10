@@ -27,6 +27,8 @@ Automated pipeline that captures, processes, and daily publishes a dynamic, sunr
 ## Libraries and tools
 [configparser](https://docs.python.org/3/library/configparser.html)
 
+[logging](https://docs.python.org/3/library/logging.html)
+
 [cron](https://en.wikipedia.org/wiki/Cron)
 
 [rsync](https://en.wikipedia.org/wiki/Rsync)
