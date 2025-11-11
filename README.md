@@ -56,9 +56,9 @@ Raspberry Pi camera library.
 ## Backups
 To stop the memory card clogging up, we send files to a NAS for backup.
 
-- Clear files to NAS daily, into a directory with Device-ID (.conf).
-- Folder with YYYYMMDD-timelaps_pics for the pics
-- File with YYYYMMDD-timelapse.mp4 for the video
+- Clear files to NAS daily, into a directory with [Device_ID] (defined in .conf).
+- Folder with YYYYMMDD-[Device_ID]-timelaps_pics for the pics
+- File with YYYYMMDD-[Device_ID]-timelapse.mp4 for the video
 - Upload to Youtube.
 - Delete after 4 days (defined in .conf)
 
