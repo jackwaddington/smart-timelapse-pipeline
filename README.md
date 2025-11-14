@@ -72,5 +72,6 @@ To stop the memory card clogging up, we send files to a NAS for backup.
 I have many projects I want to build. Some features I would like to explore:
 
 - use execvp() instead of std::system.
+- text overlay with opencv.
 - remove files, regardless of backup, when disk space is at X
 - - perhaps remove images first, until diskspace < 60%, and then remove oldest video.
