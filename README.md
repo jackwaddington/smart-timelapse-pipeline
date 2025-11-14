@@ -21,7 +21,7 @@ Automated pipeline that captures, processes, and daily publishes a dynamic, sunr
 
 
 ## Features
-- "Make Legacy" to use older Raspbery Pi camera libraries for the Pi Zero
+- "Make Legacy" to use older Raspbery Pi camera libraries for the Pi Zero __remove__
 - We can use .conf file to say which instruction to use for the R-Pi camera on newer Pis.
 
 
@@ -66,3 +66,11 @@ To stop the memory card clogging up, we send files to a NAS for backup.
 
 - How do we know everything is okay?
 - Could we send 'critical' logs?
+
+## Backlog
+
+I have many projects I want to build. Some features I would like to explore:
+
+- use execvp() instead of std::system.
+- remove files, regardless of backup, when disk space is at X
+- - perhaps remove images first, until diskspace < 60%, and then remove oldest video.
