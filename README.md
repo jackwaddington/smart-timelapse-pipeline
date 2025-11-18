@@ -1,12 +1,14 @@
 # smart-timelapse-pipeline
 Automated pipeline that captures, processes, and daily publishes a dynamic, sunrise-to-sunset timelapse to YouTube.
 
+At the non-technical level - 'lets share each day'.
 
 [Youtube](https://www.youtube.com/@RoihuCam)
 
 
 ## What problem am I trying to solve?
 - Automatically generate 'content'.
+- Photography might be the recording of light. We can use automation to take pictures where there is light - from sunrise to sunset.
 - Creating long term observation with 'fire and forget'.
 - Use [Raspberry Pi Zero W](https://www.raspberrypi.com/products/raspberry-pi-zero-w/) with it's limited resources - single core, 1ghz, 500mb ram.
 
