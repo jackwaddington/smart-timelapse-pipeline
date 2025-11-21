@@ -20,6 +20,13 @@ At the non-technical level - 'lets share each day'.
   - scheduler.py to check when to take pictures
   - timelapse.cpp to read the schedule, read the image capure settings, take image and make the video.
   - manager.py to upload the video, move files to NAS and free up space on the device.
+ 
+## How things should work
+- fire and forget
+- if device looses internet, it will keep going, first deleting pics, then videos.
+- keep device 20% empty
+- handle DST
+- handle midsummer and winter - what are the those times going to be, do we have time to processes in 'night time'?
 
 
 ## Features
