@@ -28,13 +28,73 @@ Over the weeks, as different challenges surfaced, I found that my initial three 
 - Use [Raspberry Pi Zero W](https://www.raspberrypi.com/products/raspberry-pi-zero-w/) with it's limited resources - single core, 1ghz, 500mb ram.
 
 
-## Hows does it work?
-- timelapse.conf to hold our configurations
-- Makefile to compile the CPP and set up the CRON jobs
-- CRON jobs start the scripts
-  - scheduler.py to check when to take pictures
-  - timelapse.cpp to read the schedule, read the image capure settings, take image and make the video.
-  - manager.py to upload the video, move files to NAS and free up space on the device.
+## How does it work?
+
+### 📅 Scheduler (scheduler.py)
+
+```mermaid
+graph TD
+    A[🌍 Read local coordinates from conf] --> B[🌅 Get sunrise/sunset times from API]
+    B --> C[🕐 Check for DST]
+    C --> D[🌆 Add twilight buffer from conf]
+    D --> E[🧮 Calculate interval between pictures]
+    E --> F[📝 Write schedule file]
+```
+
+### 📷 Timelapse Capture (timelapse.cpp)
+
+```mermaid
+graph TD
+    A[📄 Read camera settings from conf] --> B[📅 Read schedule for timings]
+    B --> C[📷 Start taking pictures]
+    C --> D[⏹️ Stop taking pictures]
+    D --> E[🎬 Compile into video]
+    E --> F[📊 Log start time, end time & CPU temps]
+```
+
+### 🏠 Housekeeping (manager.py)
+
+```mermaid
+graph TD
+    A[💾 Backup files to NAS] --> B[📺 Upload video to YouTube]
+    B --> C{💽 Disk space low?}
+    C -->|Yes| D[🗑️ Delete picture files]
+    D --> E{💽 Still low?}
+    E -->|Yes| F[🗑️ Delete oldest video files]
+    E -->|No| G[✅ Done]
+    C -->|No| G
+```
+
+**Configuration:** `timelapse.conf` holds all settings
+**Build:** `Makefile` compiles C++ and sets up CRON jobs
+**Automation:** CRON jobs trigger each component
+
+```mermaid
+graph LR
+    subgraph Files
+        Config[("config.yaml")]
+        Schedule[("schedule.md")]
+    end
+
+    subgraph Process [Process]
+        direction TB
+        Step1["Get local coordinates"]
+        Step2["Get buffer time"]
+        Step3["Calculate interval"]
+        Step4["Write to schedule file"]
+        
+        Step1 --> Step2
+        Step2 --> Step3
+        Step3 --> Step4
+    end
+
+    %% Config points into the specific processes that use it
+    Config -.-> Step1
+    Config -.-> Step2
+    
+    %% Output to the schedule file
+    Step4 -.-> Schedule
+```
  
 ## How things should work
 - fire and forget
