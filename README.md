@@ -1,7 +1,8 @@
 # smart-timelapse-pipeline
-Automated pipeline that captures, processes, and daily publishes a dynamic, sunrise-to-sunset timelapse to YouTube.
 
-At the non-technical level - 'lets share each day'.
+Daily timelapse, from sunrise to sunset, uploaded to YouTube, automatically.
+
+Python, C++, RSync, CRON.
 
 [Youtube](https://www.youtube.com/@RoihuCam)
 
