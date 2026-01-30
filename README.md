@@ -10,7 +10,10 @@ Python, C++, RSync, CRON.
 
 This project started as trying to make use of equipment I already owned for something that wasn't totally silly. I can take pictures, I can compute,  I can network, I don't have time and I want to practice using C++. Here was the itital plan:
 
-Take pictures -> Make timelapse -> Upload to YouTube.
+```mermaid
+graph LR
+    A[📷 Take pictures] --> B[🎬 Make timelapse] --> C[📺 Upload to YouTube]
+```
 
 Initial tests were on a Pi5 were a breeze, but it didn't look very sleek. I had a Pi Zero with a sweet case I bought a few years ago - so no brainer.
 
