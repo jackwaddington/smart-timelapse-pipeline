@@ -70,30 +70,35 @@ graph TD
 **Automation:** CRON jobs trigger each component
 
 ```mermaid
-graph LR
-    subgraph Files
-        Config[("config.yaml")]
-        Schedule[("schedule.md")]
-    end
+flowchart TD
+    %% Define Data Sources
+    Config[("config.yaml")]
+    SunAPI@{ shape: cloud, label: "Sunrise/Sunset API" }
 
     subgraph Process [Process]
         direction TB
         Step1["Get local coordinates"]
-        Step2["Get buffer time"]
-        Step3["Calculate interval"]
-        Step4["Write to schedule file"]
+        Step2["Fetch solar times (API)"]
+        Step3["Get buffer time"]
+        Step4["Calculate interval"]
+        Step5["Write to schedule file"]
         
         Step1 --> Step2
         Step2 --> Step3
         Step3 --> Step4
+        Step4 --> Step5
     end
 
-    %% Config points into the specific processes that use it
+    %% Define the Final Output
+    Schedule[("schedule.md")]
+
+    %% Connections from outside into the process
     Config -.-> Step1
-    Config -.-> Step2
+    Config -.-> Step3
+    SunAPI -.-> Step2
     
-    %% Output to the schedule file
-    Step4 -.-> Schedule
+    %% Final output connection
+    Step5 -.-> Schedule
 ```
  
 ## How things should work
