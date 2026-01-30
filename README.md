@@ -21,6 +21,11 @@ Going from cores with GHZs and GBs of RAM to 1 core, 1GHZ and 0.5 GB RAM was int
 
 Over the weeks, as different challenges surfaced, I found that my initial three parts were becoming more mature. Using log and config files I could decouple each part for better trouble shooting and the algorythms for uploading, backing up and deleting old files could be tweeked for reliability, for example if there was no internet or security credentials were expired.
 
+```mermaid
+graph LR
+    A[📊 Get data] --> B[🎬 Make timelapse] --> C[🏠 Housekeeping]
+```
+
 ## What problem am I trying to solve?
 - Automatically generate 'content'.
 - Photography might be the recording of light. We can use automation to take pictures where there is light - from sunrise to sunset.
