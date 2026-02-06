@@ -1,0 +1,13 @@
+/programs/automated_timelapse
+*.log
+schedule_*.txt
+/timelapse_*/
+/pics/
+/vids/
+/build/
+#.nas_passwordschedules/*
+/schedules/*
+programs/timelapse
+videos*
+.DS_Store
+*.DS_Store

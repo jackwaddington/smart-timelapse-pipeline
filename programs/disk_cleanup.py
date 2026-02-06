@@ -5,7 +5,7 @@ Disk-based cleanup script for auto-timelapse.
 Runs independently of manager.py to ensure cleanup happens even if backups fail.
 Uses disk usage thresholds to trigger cleanup, with tiered deletion:
 1. Delete old photo directories first (oldest first, must have .backed_up marker)
-2. Delete old videos only as last resort (oldest first, must have .backed_up marker)
+2. Delete old videos only as lastdi resort (oldest first, must have .backed_up marker)
 
 Safety: Never deletes anything younger than MIN_RETENTION_DAYS.
 """
@@ -288,32 +288,19 @@ def main():
     photos_deleted = cleanup_photos(target_percent, min_days, require_backup_marker=True)
     logging.info(f"Photo cleanup (backed-up only) complete. Deleted {photos_deleted} directories.")
 
-    # Tier 2: If still above threshold, clean unbackedup photos (data loss to keep running)
-    current_usage = get_disk_usage_percent()
-    if current_usage >= start_percent:
-        logging.warning(f"Disk still at {current_usage:.1f}% after backed-up cleanup. Deleting unbackedup photos...")
-        unbackedup_deleted = cleanup_photos(target_percent, min_days, require_backup_marker=False)
-        logging.warning(f"Unbackedup photo cleanup complete. Deleted {unbackedup_deleted} directories.")
-        photos_deleted += unbackedup_deleted
-
-    # Tier 3: Emergency - clean up backed-up videos
+    # Tier 2: Emergency - clean up backed-up videos
     current_usage = get_disk_usage_percent()
     if current_usage >= emergency_percent:
         logging.warning(f"EMERGENCY: Disk usage {current_usage:.1f}% exceeds {emergency_percent}%. Starting video cleanup...")
         videos_deleted = cleanup_videos(emergency_target, min_days, require_backup_marker=True)
         logging.warning(f"Video cleanup (backed-up only) complete. Deleted {videos_deleted} videos.")
 
-        # Tier 4: Still in emergency - clean unbackedup videos (last resort)
-        current_usage = get_disk_usage_percent()
-        if current_usage >= emergency_percent:
-            logging.error(f"CRITICAL: Still at {current_usage:.1f}%. Deleting unbackedup videos as last resort...")
-            unbackedup_videos = cleanup_videos(emergency_target, min_days, require_backup_marker=False)
-            logging.error(f"Unbackedup video cleanup complete. Deleted {unbackedup_videos} videos.")
-
-    # Final check
+    # Final check - we intentionally do NOT delete unbacked items
+    # In doomsday scenario, disk fills up preserving all data as a forensic record
     final_usage = get_disk_usage_percent()
-    if final_usage >= emergency_percent:
-        logging.error(f"CRITICAL: Disk usage still at {final_usage:.1f}% after all cleanup. Manual intervention required.")
+    if final_usage >= start_percent:
+        logging.warning(f"Disk usage at {final_usage:.1f}% - only backed-up items can be deleted.")
+        logging.warning("Unbacked items preserved. Disk may fill up if backups continue to fail.")
 
     logging.info(f"Final disk usage: {final_usage:.1f}%")
     logging.info("=== Disk cleanup finished ===")
