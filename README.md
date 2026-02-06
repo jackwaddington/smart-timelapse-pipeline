@@ -4,22 +4,22 @@ Daily timelapse, from sunrise to sunset, uploaded to YouTube, automatically.
 
 Python, C++, RSync, CRON.
 
-[Youtube](https://www.youtube.com/@RoihuCam)
+[YouTube](https://www.youtube.com/@RoihuCam)
 
-## Introduciton
+## Introduction
 
-This project started as trying to make use of equipment I already owned for something that wasn't totally silly. I can take pictures, I can compute,  I can network, I don't have time and I want to practice using C++. Here was the itital plan:
+This project started as trying to make use of equipment I already owned for something that wasn't totally silly. I can take pictures, I can compute, I can network, I don't have time and I want to practice using C++. Here was the initial plan:
 
 ```mermaid
 graph LR
     A[📷 Take pictures] --> B[🎬 Make timelapse] --> C[📺 Upload to YouTube]
 ```
 
-Initial tests were on a Pi5 were a breeze, but it didn't look very sleek. I had a Pi Zero with a sweet case I bought a few years ago - so no brainer.
+Initial tests on a Pi5 were a breeze, but it didn't look very sleek. I had a Pi Zero with a sweet case I bought a few years ago - so no brainer.
 
-Going from cores with GHZs and GBs of RAM to 1 core, 1GHZ and 0.5 GB RAM was interesting! It pushed me to learn about distributing ths system - take images on the Pi0, move them somewhere else to process? However, I had faith in this device and wanted to see it make its mark on the world/YouTube and introduced logging and found it could compile a 30 second video in about 15 minutes with the CPU temp rising only 5c in that time.
+Going from cores with GHZs and GBs of RAM to 1 core, 1GHZ and 0.5 GB RAM was interesting! It pushed me to learn about distributing the system - take images on the Pi0, move them somewhere else to process? However, I had faith in this device and wanted to see it make its mark on the world/YouTube and introduced logging and found it could compile a 30 second video in about 15 minutes with the CPU temp rising only 5c in that time.
 
-Over the weeks, as different challenges surfaced, I found that my initial three parts were becoming more mature. Using log and config files I could decouple each part for better trouble shooting and the algorythms for uploading, backing up and deleting old files could be tweeked for reliability, for example if there was no internet or security credentials were expired.
+Over the weeks, as different challenges surfaced, I found that my initial three parts were becoming more mature. Using log and config files I could decouple each part for better troubleshooting and the algorithms for uploading, backing up and deleting old files could be tweaked for reliability, for example if there was no internet or security credentials were expired.
 
 ```mermaid
 graph LR
@@ -27,11 +27,12 @@ graph LR
 ```
 
 ## What problem am I trying to solve?
+
 - Automatically generate 'content'.
 - Photography might be the recording of light. We can use automation to take pictures where there is light - from sunrise to sunset.
 - Creating long term observation with 'fire and forget'.
-- Use [Raspberry Pi Zero W](https://www.raspberrypi.com/products/raspberry-pi-zero-w/) with it's limited resources - single core, 1ghz, 500mb ram.
-
+- Use [Raspberry Pi Zero W](https://www.raspberrypi.com/products/raspberry-pi-zero-w/) with its limited resources - single core, 1ghz, 500mb ram.
+- Handle Daylight Saving Time and seasonal variation (midsummer vs winter daylight hours).
 
 ## How does it work?
 
@@ -57,115 +58,35 @@ graph TD
     E --> F[📊 Log start time, end time & CPU temps]
 ```
 
-### 🏠 Housekeeping (manager.py)
+### 🏠 Housekeeping (manager.py + disk_cleanup.py)
 
 ```mermaid
 graph TD
-    A[💾 Backup files to NAS] --> B[📺 Upload video to YouTube]
-    B --> C{💽 Disk space low?}
-    C -->|Yes| D[🗑️ Delete picture files]
-    D --> E{💽 Still low?}
-    E -->|Yes| F[🗑️ Delete oldest video files]
+    A[💾 Backup photos & video to NAS] --> B[📺 Upload video to YouTube]
+    B --> C[🗑️ Delete old backed-up photos]
+    C --> D[🗑️ Delete old backed-up videos]
+    D --> E{💽 Disk pressure?}
+    E -->|Yes| F[🗑️ Emergency: delete more backed-up items]
     E -->|No| G[✅ Done]
-    C -->|No| G
+    F --> G
 ```
+
+Files are only deleted once confirmed backed up to NAS (`.backed_up` marker). Videos also require a `.youtubed` marker if YouTube upload is enabled. If the network goes down and backups stop, nothing gets deleted - the SD card fills up as a forensic record rather than losing unbacked data.
 
 **Configuration:** `timelapse.conf` holds all settings
 **Build:** `Makefile` compiles C++ and sets up CRON jobs
-**Automation:** CRON jobs trigger each component
+**Automation:** CRON jobs trigger each component on schedule
 
-```mermaid
-flowchart TD
-    %% Define Data Sources
-    Config[("config.yaml")]
-    SunAPI@{ shape: cloud, label: "Sunrise/Sunset API" }
+## Setup
 
-    subgraph Process [Process]
-        direction TB
-        Step1["Get local coordinates"]
-        Step2["Fetch solar times (API)"]
-        Step3["Get buffer time"]
-        Step4["Calculate interval"]
-        Step5["Write to schedule file"]
-        
-        Step1 --> Step2
-        Step2 --> Step3
-        Step3 --> Step4
-        Step4 --> Step5
-    end
+1. Clone to Pi and edit `conf/timelapse.conf` with your coordinates, NAS IP, and camera settings
+2. Run `make` to compile the C++ capture program and install CRON jobs
+3. For YouTube upload: add `client_secrets.json` to `conf/` and run `python3 programs/youtube_auth.py --headless`
 
-    %% Define the Final Output
-    Schedule[("schedule.md")]
+## Tools
 
-    %% Connections from outside into the process
-    Config -.-> Step1
-    Config -.-> Step3
-    SunAPI -.-> Step2
-    
-    %% Final output connection
-    Step5 -.-> Schedule
-```
- 
-## How things should work
-- fire and forget
-- if device looses internet, it will keep going, first deleting pics, then videos.
-- keep device 20% empty
-- handle Daylight Saving Time (DST)
-- handle midsummer and winter - what are the those times going to be, do we have time to processes in 'night time'?
-
-
-## Features
-- We can use .conf file to say which instruction to use for the R-Pi camera on newer Pis.
-- Device will first of all delete pictures before deleting videos.
-
-
-## Improvements
-- The settings of the 'take image' take command can be edited.
-- conf file?
-
-
-## Libraries and tools
-[configparser](https://docs.python.org/3/library/configparser.html)
-This is a really handy library to parse config files - letting me set variables externally of programs.
-
-[logging](https://docs.python.org/3/library/logging.html)
-Another handy library that makes nice logfiles.
-
-[cron](https://en.wikipedia.org/wiki/Cron)
-Scheduluer built into the system.
-
-[rsync](https://en.wikipedia.org/wiki/Rsync)
-We have CP to copy a file, SCP to copy over network and Rsync expands on those capabilities.
-
-[sshpass](https://sshpass.com/)
-I had issues with key-based access to my NAS and this provides a workaround by locally storing a password.
-
-[rpicam-still](https://www.raspberrypi.com/documentation/computers/camera_software.html#rpicam-apps)
-Raspberry Pi camera library. 
-
-## Logs
-- CPU temp during video compilation
-- Time to compile video
-
-## Backups
-To stop the memory card clogging up, we send files to a NAS for backup.
-
-- Clear files to NAS daily, into a directory with [Device_ID] (defined in .conf).
-- Folder with YYYYMMDD-[Device_ID]-timelaps_pics for the pics
-- File with YYYYMMDD-[Device_ID]-timelapse.mp4 for the video
-- Upload to Youtube.
-- Delete after 4 days (defined in .conf)
-
-## Health check
-
-- How do we know everything is okay?
-- Could we send 'critical' logs?
-
-## Backlog
-
-I have many projects I want to build. Some features I would like to explore:
-
-- use execvp() instead of std::system.
-- text overlay with opencv.
-- remove files, regardless of backup, when disk space is at X
-- - perhaps remove images first, until diskspace < 60%, and then remove oldest video.
+- [OpenCV](https://opencv.org/) - video compilation from captured frames
+- [rpicam-still](https://www.raspberrypi.com/documentation/computers/camera_software.html#rpicam-apps) - Raspberry Pi camera capture
+- [rsync](https://en.wikipedia.org/wiki/Rsync) - NAS backup via rsync daemon
+- [cron](https://en.wikipedia.org/wiki/Cron) - scheduling
+- [configparser](https://docs.python.org/3/library/configparser.html) / [logging](https://docs.python.org/3/library/logging.html) - Python config and log management
