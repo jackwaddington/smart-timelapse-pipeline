@@ -30,7 +30,9 @@
 const char* CONFIG_FILE = "conf/timelapse.conf";
 
 // constructor
-TimeLapse::TimeLapse() : photo_count(0) {
+TimeLapse::TimeLapse() : photo_count(0), capture_errors(0),
+    last_capture_duration_ms(0), last_capture_success(false),
+    last_capture_epoch(0) {
     // 1. Ensure directories exist
     if (!create_dir(LOGS_PATH)) {
          throw std::runtime_error("Failed to create logs directory: " + std::string(LOGS_PATH));
@@ -94,6 +96,35 @@ void TimeLapse::log_status(const std::string& message) {
         logfile << "[" << timestamp << "] " << message << std::endl;
         logfile.close();
     }
+}
+
+void TimeLapse::write_status_file(const std::string& status) {
+    auto now = std::chrono::system_clock::now();
+    auto epoch = std::chrono::duration_cast<std::chrono::seconds>(
+        now.time_since_epoch()).count();
+
+    std::ofstream f(STATUS_FILE);
+    if (!f.is_open()) {
+        log_status("Warning: Could not write status file");
+        return;
+    }
+
+    f << "{\n"
+      << "  \"status\": \"" << status << "\",\n"
+      << "  \"device_id\": \"" << device_id << "\",\n"
+      << "  \"date\": \"" << date_str << "\",\n"
+      << "  \"photos_captured\": " << photo_count << ",\n"
+      << "  \"expected_photos\": " << expected_photos << ",\n"
+      << "  \"capture_errors\": " << capture_errors << ",\n"
+      << "  \"last_capture_success\": " << (last_capture_success ? "true" : "false") << ",\n"
+      << "  \"last_capture_timestamp\": " << last_capture_epoch << ",\n"
+      << "  \"last_capture_duration_ms\": " << std::fixed << std::setprecision(1) << last_capture_duration_ms << ",\n"
+      << "  \"start_time\": \"" << start_time << "\",\n"
+      << "  \"end_time\": \"" << end_time << "\",\n"
+      << "  \"interval_seconds\": " << interval_seconds << ",\n"
+      << "  \"updated_at\": " << epoch << "\n"
+      << "}\n";
+    f.close();
 }
 
 bool TimeLapse::load_config() {
@@ -271,26 +302,33 @@ bool TimeLapse::capture_photo() {
     int result = std::system(capture_command.c_str());
     
     // --- ERROR CHECKING ---
-    
+
     // 1. Check if the shell failed to execute the command itself.
     if (result == -1) {
         log_status("FATAL ERROR: Failed to execute shell command (system() returned -1). Command: " + capture_command);
+        capture_errors++;
+        last_capture_success = false;
         return false;
     }
-    
+
     // 2. Check if the command (libcamera-still) executed but returned an error code.
     // WEXITSTATUS requires <sys/wait.h>
-    int exit_code = WEXITSTATUS(result); 
-    
+    int exit_code = WEXITSTATUS(result);
+
     if (exit_code != 0) {
         // Log the failure with the specific exit code.
         std::string error_msg = "COMMAND ERROR: Capture failed. Command exit code: " + std::to_string(exit_code) + ". Command: " + capture_command;
         log_status(error_msg);
+        capture_errors++;
+        last_capture_success = false;
         return false;
     }
 
     // --- SUCCESS ---
     // If the exit_code is 0, the capture was successful.
+    last_capture_success = true;
+    last_capture_epoch = std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
     photo_files.push_back(filename);
     
     // Log success only if we didn't log the "Capturing" message earlier
@@ -373,13 +411,15 @@ void TimeLapse::create_video() {
 // Public methods implementation
 void TimeLapse::run() {
     log_status("Waiting for start time: " + start_time);
-    
+    write_status_file("waiting");
+
     // Wait until start time
     while (!is_time_to_start()) {
         std::this_thread::sleep_for(std::chrono::seconds(30));
     }
-    
+
     log_status("Starting automated timelapse capture!");
+    write_status_file("capturing");
     
     // Capture loop
     while (!is_time_to_stop()) {
@@ -390,11 +430,15 @@ void TimeLapse::run() {
 		if (!capture_photo()) {
 			log_status("Failed to capture photo, continuing...");
 		}
-    
+
     // record end time
 	    auto capture_end = std::chrono::steady_clock::now();
-	// calc diff	
+	// calc diff
 	    auto capture_duration = std::chrono::duration_cast<std::chrono::seconds>(capture_end - capture_start);
+	    last_capture_duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(capture_end - capture_start).count();
+
+	    // Update status file for metrics scraping
+	    write_status_file("capturing");
     
     // Sleep for the remaining time to maintain the interval
 		auto sleep_time = interval_seconds - capture_duration.count();
@@ -407,9 +451,11 @@ void TimeLapse::run() {
     
     log_status("Scheduled capture complete! Captured " + std::to_string(photo_count) + " photos.");
     log_status("Expected: " + std::to_string(expected_photos) + " photos");
-    
+
     // Execute video creation immediately after capture finishes
+    write_status_file("creating_video");
     create_video();
-    
+
+    write_status_file("finished");
     log_status("Automated timelapse thread finished.");
 }

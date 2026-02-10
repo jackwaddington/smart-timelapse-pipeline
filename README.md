@@ -77,11 +77,20 @@ Files are only deleted once confirmed backed up to NAS (`.backed_up` marker). Vi
 **Build:** `Makefile` compiles C++ and sets up CRON jobs
 **Automation:** CRON jobs trigger each component on schedule
 
+## Observability
+
+The C++ capture binary writes a status file (`/tmp/timelapse_status.json`) on every capture, and a lightweight Python HTTP server (`programs/metrics_server.py`) exposes it as Prometheus metrics at `:8080/metrics`. Zero pip dependencies — Python stdlib only.
+
+Prometheus on a [k3s cluster](https://github.com/jackwaddington/jWorld-observability) scrapes the Pi as a static target every 60 seconds. Metrics include capture progress, photo count, errors, disk usage, CPU temperature, and backup status.
+
+See [pm/03-observability-spec.md](pm/03-observability-spec.md) for the full specification and [pm/04-setup-guide.md](pm/04-setup-guide.md) (Step 9) for deployment instructions.
+
 ## Setup
 
 1. Clone to Pi and edit `conf/timelapse.conf` with your coordinates, NAS IP, and camera settings
 2. Run `make` to compile the C++ capture program and install CRON jobs
 3. For YouTube upload: add `client_secrets.json` to `conf/` and run `python3 programs/youtube_auth.py --headless`
+4. For Prometheus metrics: `sudo cp deploy/timelapse-metrics.service /etc/systemd/system/ && sudo systemctl enable --now timelapse-metrics`
 
 ## Tools
 

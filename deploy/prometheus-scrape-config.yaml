@@ -1,0 +1,26 @@
+# Prometheus scrape configuration for the timelapse Pi
+#
+# The Pi runs bare-metal (not a k3s pod), so it's added as a static target
+# in the Prometheus ConfigMap.
+#
+# The actual config lives in the jWorld-observability repo:
+#   monitoring/prometheus/configmap.yaml
+#
+# ArgoCD auto-syncs that repo, so committing the change is all you need.
+#
+# This is the snippet that was added to the ConfigMap:
+#
+#   - job_name: "timelapse"
+#     scrape_interval: 60s
+#     static_configs:
+#       - targets: ["PI_IP_ADDRESS:8080"]
+#         labels:
+#           device: "Pi0Cam"
+#
+# Replace PI_IP_ADDRESS with the Pi's actual LAN IP (e.g. 192.168.0.50).
+# After pushing to main, ArgoCD syncs and Prometheus picks up the new target.
+#
+# To verify it's working:
+#   1. Open Prometheus UI (kubectl port-forward svc/prometheus -n monitoring 9090:9090)
+#   2. Go to Status > Targets
+#   3. Look for the "timelapse" job — it should show UP

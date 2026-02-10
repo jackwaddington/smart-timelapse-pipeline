@@ -1,0 +1,25 @@
+# systemd service for the timelapse metrics server
+#
+# Install:
+#   sudo cp deploy/timelapse-metrics.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now timelapse-metrics
+#
+# Check status:
+#   sudo systemctl status timelapse-metrics
+#   curl http://localhost:8080/metrics
+
+[Unit]
+Description=Timelapse Prometheus Metrics Server
+After=network.target
+
+[Service]
+Type=simple
+User=jack
+WorkingDirectory=/home/jack/github/auto-timelapse/v5-zero_test
+ExecStart=/usr/bin/python3 programs/metrics_server.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

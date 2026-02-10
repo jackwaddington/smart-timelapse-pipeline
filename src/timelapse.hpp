@@ -14,6 +14,9 @@
 #define PICS_PATH "pics/"
 #define VIDEOS_PATH "videos/"
 
+// --- Constants ---
+#define STATUS_FILE "/tmp/timelapse_status.json"
+
 // --- Class Definition ---
 class TimeLapse {
 private:
@@ -33,11 +36,18 @@ private:
     int interval_seconds;
     int expected_photos;
 
+    // Metrics tracking
+    int capture_errors;
+    double last_capture_duration_ms;
+    bool last_capture_success;
+    long last_capture_epoch;
+
     // Private utility methods
     std::string get_timestamp();
     void log_status(const std::string& message);
     bool load_today_schedule();
 	bool load_config();
+    void write_status_file(const std::string& status);
 
     // Time conversion methods
     long time_to_seconds(const std::string& time_str);
