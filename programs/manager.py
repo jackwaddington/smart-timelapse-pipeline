@@ -271,13 +271,11 @@ class TimeLapseManager:
             return None
     
     def process_completed_timelapse(self, date_str):
-        """Process a completed timelapse: backup, upload, cleanup"""
+        """Process a completed timelapse: backup and cleanup"""
         logging.info(f"Starting process for timelapse date {date_str} (Device: {self.device_id})")
         
         clean_date = date_str.replace('-', '')
-        
-        schedule_data = self._load_schedule_metadata(clean_date)
-        
+
         photo_dir = None
         for item_path in PICS_DIR.iterdir():
             if item_path.is_dir() and item_path.name.startswith(f'{clean_date}_{self.device_id}_pics'):
@@ -346,11 +344,8 @@ class TimeLapseManager:
             else:
                 logging.warning("Video file not found or backup is disabled, skipping video backup.")
 
-        # Step 2: Upload to YouTube
-        if video_file.exists():
-            self.upload_to_youtube(video_file, schedule_data)
-
-        # Step 3: Cleanup old files
+        # Step 2: Cleanup old files
+        # (YouTube upload is handled separately by youtube_upload.py --all via cron)
         self.cleanup_old_files()
         
         logging.info(f"Processing complete for {date_str}")

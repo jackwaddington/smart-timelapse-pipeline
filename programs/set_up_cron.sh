@@ -22,6 +22,9 @@ CRON_JOBS="
 
 # Disk-based cleanup (after manager sets .backed_up markers)
 10 1 * * * cd ${PROJECT_DIR} && python3 ./programs/disk_cleanup.py
+
+# Upload all pending videos to YouTube (oldest first, handles quota automatically)
+30 1 * * * cd ${PROJECT_DIR} && python3 ./programs/youtube_upload.py --all
 # END: AUTO-TIMELAPSE JOBS
 "
 # ---------------------
