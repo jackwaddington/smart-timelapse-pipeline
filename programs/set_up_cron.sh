@@ -8,8 +8,8 @@ PROJECT_DIR="/home/jack/github/auto-timelapse/v5-zero_test"
 # NOTE: The last line MUST be a newline character (\n) for crontab to read the file correctly.
 CRON_JOBS="
 # START: AUTO-TIMELAPSE JOBS
-# Generate tomorrow's schedule (end of day)
-59 23 * * * cd ${PROJECT_DIR} && python3 ./programs/scheduler.py
+# Generate today's schedule (just after midnight, 3 hours before timelapse starts)
+1 0 * * * cd ${PROJECT_DIR} && python3 ./programs/scheduler.py
 
 # Start daily timelapse at 3:00 AM
 0 3 * * * cd ${PROJECT_DIR} && nohup ./programs/timelapse > logs/todays_run.log 2>&1 &

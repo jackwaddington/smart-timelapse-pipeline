@@ -213,10 +213,10 @@ def main():
     try:
         # instanciate the scheduler
         scheduler = DailyTimeLapseScheduler()
-        
-		# make todays scheduler
+
+		# generate today's schedule (runs just after midnight)
         today_schedule = scheduler.calculate_schedule()
-        
+
 		# save todays schedule
         scheduler.save_daily_schedule(today_schedule)
         
